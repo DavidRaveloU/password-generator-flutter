@@ -1,6 +1,9 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:password_generator/misc/colors_app.dart';
+import 'package:provider/provider.dart';
+
+import '../../../domain/provider/password_generator_provide.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -26,19 +29,21 @@ class HomePage extends StatelessWidget {
               Container(
                 width: double.infinity,
                 color: ColorsApp.primaryColor,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
                   child: Column(
-                    children: const [
+                    children: [
                       SliderLength(),
-                      CheckBoxSelect(text: 'Include Uppercase Letters'),
-                      CheckBoxSelect(text: 'Include Lowercase Letters'),
-                      CheckBoxSelect(text: 'Include Numbers'),
-                      CheckBoxSelect(text: 'Include Symbols'),
-                      SizedBox(height: 10),
+                      CheckBoxSelect(
+                          text: 'Include Uppercase Letters', number: 1),
+                      CheckBoxSelect(
+                          text: 'Include Lowercase Letters', number: 2),
+                      CheckBoxSelect(text: 'Include Numbers', number: 3),
+                      CheckBoxSelect(text: 'Include Symbols', number: 4),
+                      SizedBox(height: 20),
                       PasswordStrength(),
                       SizedBox(height: 25),
-                      ButtonGenerator()
+                      ButtonGenerator(),
                     ],
                   ),
                 ),
@@ -53,8 +58,8 @@ class HomePage extends StatelessWidget {
 
 class ButtonGenerator extends StatefulWidget {
   const ButtonGenerator({
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ButtonGenerator> createState() => _ButtonGeneratorState();
@@ -68,13 +73,26 @@ class _ButtonGeneratorState extends State<ButtonGenerator> {
       child: MaterialButton(
         height: 60,
         color: ColorsApp.secondaryColor,
-        onPressed: () {},
-        child: Row(
+        onPressed: () {
+          var passwordProvider = context.read<PasswordProvider>();
+          if (passwordProvider.isLowerCase ||
+              passwordProvider.isUpperCase ||
+              passwordProvider.isNumbers ||
+              passwordProvider.isSymbols) {
+            passwordProvider.generatePassword();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Select at least one option'),
+              backgroundColor: Colors.red,
+            ));
+          }
+        },
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text(
               'GENERATE',
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             SizedBox(width: 4),
             Icon(Icons.arrow_forward_rounded)
@@ -135,26 +153,69 @@ class PasswordStrength extends StatelessWidget {
 }
 
 class CheckBoxSelect extends StatefulWidget {
+  /* [
+    1=Uppercase
+    2=Lowercase
+    3=Numbers
+    4=Symbols
+  ] */
+  final int number;
   final String text;
-  const CheckBoxSelect({super.key, required this.text});
+  const CheckBoxSelect({super.key, required this.text, required this.number});
 
   @override
   State<CheckBoxSelect> createState() => _CheckBoxSelectState();
 }
 
 class _CheckBoxSelectState extends State<CheckBoxSelect> {
-  bool _value = false;
+  void handleCheckboxSelection(int number) {
+    switch (number) {
+      case 1:
+        context.read<PasswordProvider>().setIsUpperCase();
+        break;
+      case 2:
+        context.read<PasswordProvider>().setIsLowerCase();
+        break;
+      case 3:
+        context.read<PasswordProvider>().setIsNumbers();
+        break;
+      case 4:
+        context.read<PasswordProvider>().setIsSymbols();
+        break;
+      default:
+        break;
+    }
+  }
+
+  bool checkboxSelection(int number) {
+    bool checkboxValue = false;
+    switch (number) {
+      case 1:
+        checkboxValue = context.watch<PasswordProvider>().isUpperCase;
+        break;
+      case 2:
+        checkboxValue = context.watch<PasswordProvider>().isLowerCase;
+        break;
+      case 3:
+        checkboxValue = context.watch<PasswordProvider>().isNumbers;
+        break;
+      case 4:
+        checkboxValue = context.watch<PasswordProvider>().isSymbols;
+        break;
+      default:
+        break;
+    }
+    return checkboxValue;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Checkbox(
-          value: _value,
+          value: checkboxSelection(widget.number),
           onChanged: (bool? value) {
-            setState(() {
-              _value = value!;
-            });
+            handleCheckboxSelection(widget.number);
           },
           fillColor: MaterialStateProperty.all<Color>(ColorsApp.secondaryColor),
           checkColor: const Color.fromRGBO(19, 18, 25, 1),
@@ -182,17 +243,6 @@ class SliderLength extends StatefulWidget {
 }
 
 class _SliderLengthState extends State<SliderLength> {
-  int _currentSliderValue = 10;
-
-  // Agrega un controlador para administrar el valor del slider
-  final _sliderValue = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _sliderValue.text = _currentSliderValue.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -204,23 +254,20 @@ class _SliderLengthState extends State<SliderLength> {
             children: [
               const Text('Character Length',
                   style: TextStyle(color: Colors.white, fontSize: 17)),
-              Text('$_currentSliderValue',
+              Text(context.watch<PasswordProvider>().sliderLength.toString(),
                   style: const TextStyle(
                       color: ColorsApp.secondaryColor, fontSize: 20))
             ],
           ),
         ),
         Slider(
-          value: _currentSliderValue.toDouble(),
-          min: 1,
+          value: context.watch<PasswordProvider>().sliderLength.toDouble(),
+          min: 4,
           max: 20,
           activeColor: ColorsApp.secondaryColor,
           inactiveColor: const Color.fromRGBO(19, 18, 25, 1),
           onChanged: (double value) {
-            setState(() {
-              _currentSliderValue = value.round();
-              _sliderValue.text = value.toString();
-            });
+            context.read<PasswordProvider>().setSliderLength(value.toInt());
           },
         ),
         const SizedBox(height: 10.0),
@@ -243,6 +290,7 @@ class _PasswordContainerState extends State<PasswordContainer> {
 
   @override
   Widget build(BuildContext context) {
+    _passwordController.text = context.watch<PasswordProvider>().password;
     return Container(
         width: double.infinity,
         height: 60,
@@ -253,6 +301,10 @@ class _PasswordContainerState extends State<PasswordContainer> {
             children: [
               Expanded(
                 child: TextField(
+                  onChanged: (value) => setState(() {
+                    var passwordProvider = context.read<PasswordProvider>();
+                    passwordProvider.changePassword(_passwordController.text);
+                  }),
                   controller: _passwordController,
                   cursorColor: ColorsApp.secondaryColor,
                   style: const TextStyle(fontSize: 19, color: Colors.white),
