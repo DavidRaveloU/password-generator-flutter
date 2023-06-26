@@ -2,6 +2,14 @@
 
 The Random Password Generator App is a Flutter application that allows users to generate random passwords based on their specified preferences. Users can customize the password by selecting whether it should include lowercase letters, uppercase letters, symbols, and numbers. Additionally, users can define the length of the password. The minimum password length is 4 characters, as all options are selected by default. If no options are selected, the app displays a message prompting the user to make a selection. The app also provides a strength indicator that classifies the password as WEAK, MEDIUM, STRONG, or VERY STRONG.
 
+## Key Features:
+
+- Generate random passwords with customizable options.
+- Choose from lowercase letters, uppercase letters, symbols, and numbers.
+- Set the desired length of the password.
+- Real-time password strength indicator.
+- Copy generated passwords to the clipboard with a single tap.
+
 ## Screenshots
 
 <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/79340743/248933152-04921dde-8cb0-44fc-9e51-681cf7fbbacf.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20230626%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230626T205157Z&X-Amz-Expires=300&X-Amz-Signature=a05a866318d1a59d5a55501bcd95908238c8fc90eb1fb95060df0f973d720171&X-Amz-SignedHeaders=host&actor_id=79340743&key_id=0&repo_id=657466061" alt="app" width="300" />
