@@ -80,6 +80,7 @@ class _ButtonGeneratorState extends State<ButtonGenerator> {
               passwordProvider.isNumbers ||
               passwordProvider.isSymbols) {
             passwordProvider.generatePassword();
+            passwordProvider.determinePasswordStrength();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Select at least one option'),
@@ -110,6 +111,25 @@ class PasswordStrength extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var passwordProvider = context.watch<PasswordProvider>();
+    int strength = passwordProvider.strengthLevel;
+    String valorText() {
+      switch (strength) {
+        case 0:
+          return '';
+        case 1:
+          return 'WEAK';
+        case 2:
+          return 'MEDIUM';
+        case 3:
+          return 'STRONG';
+        case 4:
+          return 'VERY STRONG';
+        default:
+          return '';
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Container(
@@ -127,21 +147,11 @@ class PasswordStrength extends StatelessWidget {
               ),
               Row(
                 children: [
-                  const Text('MEDIUM',
-                      style: TextStyle(
+                  Text(valorText(),
+                      style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w700)),
                   const SizedBox(width: 16),
-                  ...List.generate(4, (index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 6.0),
-                      child: Container(
-                        width: 13,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2)),
-                      ),
-                    );
-                  })
+                  buildWidgetBasedOnValue(strength)
                 ],
               ),
             ],
@@ -150,6 +160,83 @@ class PasswordStrength extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget buildWidgetBasedOnValue(int value) {
+  Color color1 = Colors.white;
+  Color color2 = Colors.white;
+  Color color3 = Colors.white;
+  Color color4 = Colors.white;
+  switch (value) {
+    case 1:
+      color1 = Colors.greenAccent;
+      break;
+    case 2:
+      color1 = Colors.greenAccent;
+      color2 = const Color.fromARGB(255, 210, 255, 64);
+      break;
+    case 3:
+      color1 = Colors.greenAccent;
+      color2 = const Color.fromARGB(255, 210, 255, 64);
+      color3 = Colors.orangeAccent;
+      break;
+    case 4:
+      color1 = Colors.greenAccent;
+      color2 = const Color.fromARGB(255, 210, 255, 64);
+      color3 = Colors.orangeAccent;
+      color4 = Colors.redAccent;
+      break;
+  }
+  return Row(children: [
+    Padding(
+      padding: const EdgeInsets.only(left: 6.0),
+      child: Container(
+        width: 13,
+        height: double.infinity,
+        decoration: BoxDecoration(
+            color: color1 == Colors.white ? Colors.transparent : color1,
+            border: Border.all(
+                color: color1 == Colors.white ? color1 : Colors.transparent,
+                width: 2)),
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.only(left: 6.0),
+      child: Container(
+        width: 13,
+        height: double.infinity,
+        decoration: BoxDecoration(
+            color: color2 == Colors.white ? Colors.transparent : color2,
+            border: Border.all(
+                color: color2 == Colors.white ? color2 : Colors.transparent,
+                width: 2)),
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.only(left: 6.0),
+      child: Container(
+        width: 13,
+        height: double.infinity,
+        decoration: BoxDecoration(
+            color: color3 == Colors.white ? Colors.transparent : color3,
+            border: Border.all(
+                color: color3 == Colors.white ? color3 : Colors.transparent,
+                width: 2)),
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.only(left: 6.0),
+      child: Container(
+        width: 13,
+        height: double.infinity,
+        decoration: BoxDecoration(
+            color: color4 == Colors.white ? Colors.transparent : color4,
+            border: Border.all(
+                color: color4 == Colors.white ? color4 : Colors.transparent,
+                width: 2)),
+      ),
+    )
+  ]);
 }
 
 class CheckBoxSelect extends StatefulWidget {
@@ -301,16 +388,13 @@ class _PasswordContainerState extends State<PasswordContainer> {
             children: [
               Expanded(
                 child: TextField(
-                  onChanged: (value) => setState(() {
-                    var passwordProvider = context.read<PasswordProvider>();
-                    passwordProvider.changePassword(_passwordController.text);
-                  }),
+                  enabled: false,
                   controller: _passwordController,
                   cursorColor: ColorsApp.secondaryColor,
                   style: const TextStyle(fontSize: 19, color: Colors.white),
                   decoration: const InputDecoration(
+                      disabledBorder: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                      disabledBorder: OutlineInputBorder(),
                       hintText: 'Password',
                       hintStyle:
                           TextStyle(color: Color.fromARGB(255, 145, 145, 145)),
